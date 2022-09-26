@@ -34,6 +34,7 @@ footer {
     align-items: center;
     padding: calc(2 * var(--pads));
     align-items: flex-start;
+    height: 70vh;
 }
 
 .display {
@@ -73,10 +74,17 @@ footer {
 
 button {
     padding: var(--pads);
+    border-radius: 12px;
+    font-size: larger;
+    font-weight: 900;
 }
 
-.numbers, .operators {
-    flex-basis: 50%;
+.numbers{
+    flex-basis: calc(100% * 2 / 3);
+}
+
+.operators {
+    flex-basis: calc(100% / 3);
 }
 
 .nums {
@@ -98,7 +106,10 @@ button {
     justify-content: center;
 }
 
-#btnEq {
-    display: flex;
+#btnEq, #btnClear {
     flex-basis: 100%;
+}
+
+#btnClear {
+    background-color: #a8dcd9;
 }

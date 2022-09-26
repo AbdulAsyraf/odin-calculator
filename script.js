@@ -1,7 +1,11 @@
 const numButtons = document.querySelectorAll(".nums");
 const opButtons = document.querySelectorAll(".ops");
+const decButton = document.querySelector("#btnDec");
+const clrButton = document.querySelector("#btnClear");
+
 const inputLine = document.querySelector("#input");
 const outputLine = document.querySelector("#result");
+
 
 const inputs = [];
 
@@ -9,50 +13,101 @@ let tempInput = ""
 
 let tempResult;
 
+let decimal = false;
+let opsActive = false;
+
 numButtons.forEach(numButton => numButton.addEventListener('click', addToString));
+clrButton.addEventListener('click', clearData);
 
-// opButtons.forEach(opButton => opButton.addEventListener('click', addToString));
+function clearData() {
+    decimal = false;
+    opsActive = false;
+    tempInput = "";
+    tempResult = "";
+    inputs.splice(0, inputs.length);
 
-opButtons.forEach(opButton => opButton.addEventListener('click', addOrOperate));
+    inputLine.innerHTML = "";
+    outputLine.innerHTML = "";
+}
 
 function addToString(e) {
     tempInput = tempInput.concat(this.dataset.btn);
-    if (inputs.length != 0) {
-        inputLine.innerHTML = `${inputs[0]} ${inputs[1]} ${tempInput}`;
-    }else {
+    
+    if (!opsActive){
+        opButtons.forEach(opButton => opButton.addEventListener('click', addOrOperate));
+        opsActive = true;
+    }
+
+    if (this.dataset.btn == "."){
+        decimal = true;
+        decButton.removeEventListener('click', addToString);
+    }
+    
+    if (inputs.length == 0) {
         inputLine.innerHTML = tempInput;
+    }else if (inputs.length == 1) {
+        inputs.splice(0, inputs.length);
+        inputLine.innerHTML = tempInput;
+    }else if (inputs.length == 2) {
+        inputLine.innerHTML = `${inputs[0]} ${inputs[1]} ${tempInput}`;
+    }
+}
+
+function bringForward(nextOp) {
+    inputs.splice(0, inputs.length);
+    if (nextOp != "=") {
+        inputs.push(tempResult);
+        inputs.push(nextOp);
+        inputLine.innerHTML = `${inputs[0]} ${inputs[1]}`;
     }
 }
 
 function addOrOperate(e) {
-    inputs.push(tempInput);
-    console.log(inputs.length);
-    tempInput = "";
+    if (tempInput) {
+        inputs.push(tempInput);
+        console.log(inputs.length);
+        tempInput = "";
+    }
+    
+    if (decimal) {
+        decimal = false;
+        decButton.addEventListener('click', addToString);
+    }
 
-    if (inputs.length < 3) {
+    if (inputs.length == 1 ) {
         inputs.push(this.dataset.btn);
-    }else {
+        inputLine.innerHTML = `${inputs[0]} ${inputs[1]}`;
+        if (this.dataset.btn == "="){
+            tempResult = Number(inputs[0]);
+            outputLine.innerHTML = tempResult;
+            bringForward(this.dataset.btn);
+        }
+    }else if (inputs.length == 2) { //to change the operator
+        inputs.pop();
+        inputs.push(this.dataset.btn);
+        inputLine.innerHTML = `${inputs[0]} ${inputs[1]}`;
+    }else if (inputs.length == 3) { //actually operate
         if (inputs[1] == "+"){
             tempResult = Number(inputs[0]) + Number(inputs[2]);
-            console.log(tempResult);
             outputLine.innerHTML = tempResult;
-            inputs.splice(0, inputs.length);
-            inputs.push(tempResult);
+            bringForward(this.dataset.btn);
         }else if (inputs[1] == "-"){
-            tempResult = inputs[0] - inputs[2];
+            tempResult = Number(inputs[0]) - Number(inputs[2]);
             outputLine.innerHTML = tempResult;
-            inputs.splice(0, inputs.length);
-            inputs.push(tempResult);
+            bringForward(this.dataset.btn);
         }else if (inputs[1] == "×"){
-            tempResult = inputs[0] * inputs[2];
+            tempResult = Number(inputs[0]) * Number(inputs[2]);
             outputLine.innerHTML = tempResult;
-            inputs.splice(0, inputs.length);
-            inputs.push(tempResult);
+            bringForward(this.dataset.btn);
         }else if (inputs[1] == "÷"){
-            tempResult = inputs[0] / inputs[2];
-            outputLine.innerHTML = tempResult;
-            inputs.splice(0, inputs.length);
-            inputs.push(tempResult);
+            if (Number(inputs[2] == 0)){
+                outputLine.innerHTML = "Yeah no";
+                bringForward("=");
+            }else {
+                tempResult = Number(inputs[0]) / Number(inputs[2]);
+                outputLine.innerHTML = tempResult;
+                bringForward(this.dataset.btn);
+            }
         }
     }
 }
